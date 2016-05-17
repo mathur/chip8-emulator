@@ -13,5 +13,6 @@ extern uint16_t PC;
 
 uint16_t fetch_next_instruction(void);
 void decode_instruction(uint16_t opcode);
+void increment_pc(void);
 
 #endif /* _CPU_H */

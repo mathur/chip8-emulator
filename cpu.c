@@ -6,10 +6,17 @@ void initialize_cpu(void) {
 
     // set the PC to the point past the metadata padding
     PC = META_MEM_PADDING;
+    
+    return;
 }
 
 uint16_t fetch_next_instruction(void) {
     return ((memory[PC] << 8) + memory[PC + 1]);
+}
+
+void increment_pc(void) {
+    PC += 2;
+    return;
 }
 
 void decode_instruction(uint16_t opcode) {
@@ -21,6 +28,9 @@ void decode_instruction(uint16_t opcode) {
                         switch(opcode & 0x000F) {
                             case 0x0000:
                                 // 00E0 - CLS
+                                // clears screen
+                                initialize_display();
+                                increment_pc();
                                 break;
                             case 0x000E:
                                 // 00EE - RET
@@ -29,43 +39,86 @@ void decode_instruction(uint16_t opcode) {
                         break;
                     default:
                         // 0nnn - SYS addr
+                        // jump to a machine code routine at nnn (deprecated)
+                        PC = opcode & 0x0FFF;
                         break;
                 }
                 break;
             case 0x1000:
                 // 1nnn - JP addr
+                // jump to a machine code routine at nnn
+                PC = opcode & 0x0FFF;
                 break;
             case 0x2000:
                 // 2nnn - CALL addr
                 break;
             case 0x3000:
                 // 3xkk - SE Vx, byte
+                // skips to next instruction if Vx == KK
+                if(V[(opcode & 0x0F00) >> 8] == (opcode & 0x0FF)) {
+                    increment_pc();
+                    increment_pc();
+                } else {
+                    increment_pc();
+                }
                 break;
             case 0x4000:
                 // 4xkk - SNE Vx, byte
+                // skips to next instruction if Vx != KK
+                if(V[(opcode & 0x0F00) >> 8] != (opcode & 0x0FF)) {
+                    increment_pc();
+                    increment_pc();
+                } else {
+                    increment_pc();
+                }
                 break;
             case 0x5000:
                 // 5xy0 - SE Vx, Vy
+                // skips to next instruction if Vx == Vy
+                if(V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x0F0) >> 4]) {
+                    increment_pc();
+                    increment_pc();
+                } else {
+                    increment_pc();
+                }
                 break;
             case 0x6000:
                 // 6xkk - LD Vx, byte
+                // set Vx to KK
+                V[(opcode & 0x0F00) >> 8] = opcode & 0x00FF;
+                increment_pc();
                 break;
             case 0x7000:
                 // 7xkk - ADD Vx, byte
+                // add KK to Vx
+                V[(opcode & 0x0F00) >> 8] += opcode & 0x00FF;
+                increment_pc();
                 break;
             case 0x8000:
                 switch(opcode & 0x000F) {
                     case 0x0000:
                         // 8xy0 - LD Vx, Vy
+                        // sets the value of Vx to Vy
+                        V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F0) >> 4]);
                         break;
+                        increment_pc();
                     case 0x0001:
                         // 8xy1 - OR Vx, Vy
+                        // sets Vx to Vx OR Vy
+                        V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] | V[(opcode & 0x0F0) >> 4]);
+                        increment_pc();
                         break;
                     case 0x0002:
                         // 8xy2 - AND Vx, Vy
+                        // sets Vx to Vx AND Vy
+                        V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] & V[(opcode & 0x0F0) >> 4]);
+                        increment_pc();
                         break;
                     case 0x0003:
                         // 8xy3 - XOR Vx, Vy
+                        // sets Vx to Vx XOR Vy
+                        V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x0F00) >> 8] ^ V[(opcode & 0x0F0) >> 4]);
+                        increment_pc();
                         break;
                     case 0x0004:
                         // 8xy4 - ADD Vx, Vy
