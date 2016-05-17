@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include "mem.h"
 
 void copy_prog_to_mem(uint8_t fname) {
     // attempt to open the file

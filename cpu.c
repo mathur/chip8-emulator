@@ -1,6 +1,14 @@
 #include "cpu.h"
 
-uint16_t fetch_next_instruction() {
+void initialize_cpu(void) {
+    // zero out all registers
+    memset(V, 0, NUM_REGS);
+
+    // set the PC to the point past the metadata padding
+    PC = META_MEM_PADDING;
+}
+
+uint16_t fetch_next_instruction(void) {
     return ((memory[PC] << 8) + memory[PC + 1]);
 }
 
