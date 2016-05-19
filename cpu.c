@@ -193,5 +193,9 @@ void decode_instruction(uint16_t opcode) {
                         break;
                 }
                 break;
+            default:
+                printf("Opcode undefined!");
+                while(1);
+                break;
         }
 }
